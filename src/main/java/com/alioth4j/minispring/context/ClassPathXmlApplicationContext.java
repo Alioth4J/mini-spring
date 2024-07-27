@@ -1,32 +1,64 @@
 package com.alioth4j.minispring.context;
 
-import com.alioth4j.minispring.beans.*;
-import com.alioth4j.minispring.core.ClassPathXmlResource;
-import com.alioth4j.minispring.core.Resource;
+import com.alioth4j.minispring.beans.BeanDefinition;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 加载资源（读取、解析XML文件），构建BeanDefinition，注入到BeanFactory中
+ * 解析XML文件，实例化Bean
  */
-public class ClassPathXmlApplicationContext implements BeanFactory {
+public class ClassPathXmlApplicationContext {
 
-    BeanFactory beanFactory;
+    private List<BeanDefinition> beanDefinitions = new ArrayList<>();
+    private Map<String, Object> singletons = new HashMap<>();
 
     public ClassPathXmlApplicationContext(String fileName) {
-        Resource resource = new ClassPathXmlResource(fileName);
-        SimpleBeanFactory beanFactory = new SimpleBeanFactory();
-        XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(beanFactory);
-        reader.loadBeanDefinitions(resource);
-        this.beanFactory = beanFactory;
+        this.readXml(fileName);
+        this.instanceBean();
     }
 
-
-    @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition) {
-        this.beanFactory.registerBeanDefinition(beanDefinition);
+    private void readXml(String fileName) {
+        SAXReader saxReader = new SAXReader();
+        URL xmlPath = this.getClass().getClassLoader().getResource(fileName);
+        Document document = null;
+        try {
+            document = saxReader.read(xmlPath);
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        Element rootElement = document.getRootElement();
+        for (Element element : (List<Element>) rootElement.elements()) {
+            String beanID = element.attributeValue("id");
+            String beanClassName = element.attributeValue("class");
+            BeanDefinition beanDefinition = new BeanDefinition(beanID, beanClassName);
+            beanDefinitions.add(beanDefinition);
+        }
     }
 
-    @Override
-    public Object getBean(String beanName) throws BeansException {
-        return this.beanFactory.getBean(beanName);
+    private void instanceBean() {
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            try {
+                singletons.put(beanDefinition.getId(), Class.forName(beanDefinition.getClassName()).newInstance());
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    public Object getBean(String beanName) {
+        return singletons.get(beanName);
+    }
+
 }
