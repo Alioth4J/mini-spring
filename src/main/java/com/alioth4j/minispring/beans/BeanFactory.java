@@ -6,8 +6,16 @@ package com.alioth4j.minispring.beans;
  */
 public interface BeanFactory {
 
-    void registerBeanDefinition(BeanDefinition beanDefinition);
-
     Object getBean(String beanName) throws BeansException;
+
+    void registerBean(String beanName, Object obj);
+
+    boolean containsBean(String name);
+
+    boolean isSingleton(String name);
+
+    boolean isPrototype(String name);
+
+    Class<?> getType(String name);
 
 }

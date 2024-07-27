@@ -5,11 +5,12 @@ import com.alioth4j.minispring.core.ClassPathXmlResource;
 import com.alioth4j.minispring.core.Resource;
 
 /**
+ * 作为外部集成包装
  * 加载资源（读取、解析XML文件），构建BeanDefinition，注入到BeanFactory中
  */
-public class ClassPathXmlApplicationContext implements BeanFactory {
+public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationEventPublisher {
 
-    BeanFactory beanFactory;
+    SimpleBeanFactory beanFactory;
 
     public ClassPathXmlApplicationContext(String fileName) {
         Resource resource = new ClassPathXmlResource(fileName);
@@ -19,14 +20,40 @@ public class ClassPathXmlApplicationContext implements BeanFactory {
         this.beanFactory = beanFactory;
     }
 
-
-    @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition) {
-        this.beanFactory.registerBeanDefinition(beanDefinition);
-    }
-
     @Override
     public Object getBean(String beanName) throws BeansException {
         return this.beanFactory.getBean(beanName);
+    }
+
+    @Override
+    public void registerBean(String beanName, Object obj) {
+        this.beanFactory.registerBean(beanName, obj);
+    }
+
+    @Override
+    public boolean containsBean(String name) {
+        return this.beanFactory.containsBean(name);
+    }
+
+    @Override
+    public boolean isSingleton(String name) {
+        // TODO
+        return false;
+    }
+
+    @Override
+    public boolean isPrototype(String name) {
+        // TODO
+        return false;
+    }
+
+    @Override
+    public Class<?> getType(String name) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public void publishEvent(ApplicationEvent event) {
     }
 }
