@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,23 +17,41 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
 
     private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
     private List<String> beanDefinitionNames = new ArrayList<>();
+    private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 
     public SimpleBeanFactory() {
+    }
+
+    /**
+     * 激活IoC容器
+     */
+    public void refresh() {
+        for (String beanName : beanDefinitionNames) {
+            try {
+                getBean(beanName);
+            } catch (BeansException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public Object getBean(String beanName) throws BeansException {
         Object singleton = this.getSingleton(beanName);
+
         if (singleton == null) {
-            BeanDefinition bd = this.beanDefinitionMap.get(beanName);
-            singleton = createBean(bd);
-            this.registerBean(beanName, singleton);
+            singleton = this.earlySingletonObjects.get(beanName);
+            if (singleton == null) {
+                BeanDefinition bd = this.beanDefinitionMap.get(beanName);
+                singleton = createBean(bd);
+                this.registerBean(beanName, singleton);
 
-            // init-method
-            if (bd.getInitMethodName() != null) {
-                // TODO init-method
+                // BeanPostProcessor
+                // step1: postProcessBeforeInitialization
+                // step2: afterPropertiesSet
+                // step3: init-method
+                // step4: postProcessAfterInitialization
             }
-
         }
         if (singleton == null) {
             throw new BeansException("No such bean: " + beanName);
@@ -41,6 +60,25 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
     }
 
     private Object createBean(BeanDefinition bd) {
+        Object obj = doCreateBean(bd);
+        // 放入earlySingletonObjects中
+        this.earlySingletonObjects.put(bd.getId(), obj);
+        Class<?> clz = null;
+        try {
+            clz = Class.forName(bd.getClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        handleProperties(bd, clz, obj);
+        return obj;
+    }
+
+    /**
+     * 构造器注入创建Bean实例
+     * @param bd
+     * @return
+     */
+    private Object doCreateBean(BeanDefinition bd) {
         Class<?> clz = null;
         try {
             clz = Class.forName(bd.getClassName());
@@ -95,8 +133,16 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 e.printStackTrace();
             }
         }
+        return obj;
+    }
 
-        // setter注入相关
+    /**
+     * setter注入相关
+     * @param bd
+     * @param clz
+     * @param obj
+     */
+    private void handleProperties(BeanDefinition bd, Class<?> clz, Object obj) {
         PropertyValues propertyValues = bd.getPropertyValues();
         if (!propertyValues.isEmpty()) {
             // setter方法注入
@@ -105,18 +151,32 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 String name = propertyValue.getName();
                 String type = propertyValue.getType();
                 Object value = propertyValue.getValue();
+                boolean isRef = propertyValue.getIsRef();
                 Class<?>[] paramTypes = new Class<?>[1];
-                if ("String".equals(type) || "java.lang.String".equals(type)) {
-                    paramTypes[0] = String.class;
-                } else if ("Integer".equals(type) || "java.lang.Integer".equals(type)) {
-                    paramTypes[0] = Integer.class;
-                } else if ("int".equals(type)) {
-                    paramTypes[0] = int.class;
-                } else {
-                    paramTypes[0] = String.class;
-                }
                 Object[] paramValues = new Object[1];
-                paramValues[0] = value;
+                if (!isRef) {
+                    if ("String".equals(type) || "java.lang.String".equals(type)) {
+                        paramTypes[0] = String.class;
+                    } else if ("Integer".equals(type) || "java.lang.Integer".equals(type)) {
+                        paramTypes[0] = Integer.class;
+                    } else if ("int".equals(type)) {
+                        paramTypes[0] = int.class;
+                    } else {
+                        paramTypes[0] = String.class;
+                    }
+                    paramValues[0] = value;
+                } else {
+                    try {
+                        paramTypes[0] = Class.forName(type);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        paramValues[0] = getBean((String)value);
+                    } catch (BeansException e) {
+                        e.printStackTrace();
+                    }
+                }
                 String methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
                 Method setter = null;
                 try {
@@ -125,7 +185,7 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                     e.printStackTrace();
                 }
                 try {
-                    setter.invoke(paramValues);
+                    setter.invoke(obj, paramValues);
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
@@ -133,8 +193,6 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
                 }
             }
         }
-
-        return obj;
     }
 
     @Override

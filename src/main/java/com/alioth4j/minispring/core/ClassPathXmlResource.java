@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.Iterator;
 
 /**
- * 读取外部XML配置，转换为Java类(解析)
+ * 初步读取外部XML配置，转换为Java类(解析)
  */
 public class ClassPathXmlResource implements Resource {
 
