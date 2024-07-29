@@ -1,20 +1,21 @@
 package com.alioth4j.minispring.beans.factory.annotation;
 
 import com.alioth4j.minispring.beans.BeansException;
-import com.alioth4j.minispring.beans.factory.config.AutowireCapableBeanFactory;
+import com.alioth4j.minispring.beans.factory.BeanFactory;
 import com.alioth4j.minispring.beans.factory.config.BeanPostProcessor;
 
 import java.lang.reflect.Field;
 
 public class AutowiredAnnotationBeanPostProcessor implements BeanPostProcessor {
 
-    private AutowireCapableBeanFactory beanFactory;
+    private BeanFactory beanFactory;
 
-    public AutowireCapableBeanFactory getBeanFactory() {
+    public BeanFactory getBeanFactory() {
         return beanFactory;
     }
 
-    public void setBeanFactory(AutowireCapableBeanFactory beanFactory) {
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

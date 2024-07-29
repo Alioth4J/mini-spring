@@ -5,7 +5,6 @@ import com.alioth4j.minispring.beans.factory.config.BeanDefinition;
 import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValue;
 import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValues;
 import com.alioth4j.minispring.beans.factory.support.AbstractBeanFactory;
-import com.alioth4j.minispring.beans.factory.support.SimpleBeanFactory;
 import com.alioth4j.minispring.core.Resource;
 import org.dom4j.Element;
 

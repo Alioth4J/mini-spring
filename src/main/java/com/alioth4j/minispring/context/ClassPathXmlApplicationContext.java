@@ -5,7 +5,8 @@ import com.alioth4j.minispring.beans.factory.BeanFactory;
 import com.alioth4j.minispring.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import com.alioth4j.minispring.beans.factory.config.AutowireCapableBeanFactory;
 import com.alioth4j.minispring.beans.factory.config.BeanFactoryPostProcessor;
-import com.alioth4j.minispring.beans.factory.support.SimpleBeanFactory;
+import com.alioth4j.minispring.beans.factory.config.ConfigurableListableBeanFactory;
+import com.alioth4j.minispring.beans.factory.support.DefaultListableBeanFactory;
 import com.alioth4j.minispring.beans.factory.xml.XmlBeanDefinitionReader;
 import com.alioth4j.minispring.core.ClassPathXmlResource;
 import com.alioth4j.minispring.core.Resource;
@@ -17,9 +18,9 @@ import java.util.List;
  * 作为外部集成包装
  * 加载资源（读取、解析XML文件），构建BeanDefinition，注入到BeanFactory中
  */
-public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationEventPublisher {
+public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
 
-    AutowireCapableBeanFactory beanFactory;
+    DefaultListableBeanFactory beanFactory;
 
     private List<BeanFactoryPostProcessor> beanFactoryPostProcessors = new ArrayList<>();
 
@@ -29,7 +30,7 @@ public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationE
 
     public ClassPathXmlApplicationContext(String fileName, boolean isRefresh) {
         Resource resource = new ClassPathXmlResource(fileName);
-        AutowireCapableBeanFactory bf = new AutowireCapableBeanFactory();
+        DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
         XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(bf);
         reader.loadBeanDefinitions(resource);
         this.beanFactory = bf;
@@ -75,12 +76,17 @@ public class ClassPathXmlApplicationContext implements BeanFactory, ApplicationE
     public void publishEvent(ApplicationEvent event) {
     }
 
+    @Override
+    public void addApplicationListener(ApplicationListener listener) {
+        this.getApplicationEventPublisher().addApplicationEventPublisher(listener);
+    }
+
     private void refresh() {
         registerBeanPostProcessors(this.beanFactory);
         onRefresh();
     }
 
-    private void registerBeanPostProcessors(AutowireCapableBeanFactory bf) {
+    private void registerBeanPostProcessors(ConfigurableListableBeanFactory bf) {
 //        if (supportAutowire) {
             bf.addBeanPostProcessor(new AutowiredAnnotationBeanPostProcessor());
 //        }
