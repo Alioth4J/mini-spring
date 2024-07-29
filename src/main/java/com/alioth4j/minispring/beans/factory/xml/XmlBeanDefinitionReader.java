@@ -1,5 +1,11 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory.xml;
 
+import com.alioth4j.minispring.beans.*;
+import com.alioth4j.minispring.beans.factory.config.BeanDefinition;
+import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValue;
+import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValues;
+import com.alioth4j.minispring.beans.factory.support.AbstractBeanFactory;
+import com.alioth4j.minispring.beans.factory.support.SimpleBeanFactory;
 import com.alioth4j.minispring.core.Resource;
 import org.dom4j.Element;
 
@@ -11,10 +17,10 @@ import java.util.List;
  */
 public class XmlBeanDefinitionReader {
 
-    SimpleBeanFactory simpleBeanFactory;
+    AbstractBeanFactory beanFactory;
 
-    public XmlBeanDefinitionReader(SimpleBeanFactory simpleBeanFactory) {
-        this.simpleBeanFactory = simpleBeanFactory;
+    public XmlBeanDefinitionReader(AbstractBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
     public void loadBeanDefinitions(Resource resource) {
@@ -28,12 +34,12 @@ public class XmlBeanDefinitionReader {
             // <bean>中嵌套的标签
             // <constructor-arg>
             List<Element> constructorElements = element.elements("constructor-arg");
-            ArgumentValues avs = new ArgumentValues();
+            ConstructorArgumentValues avs = new ConstructorArgumentValues();
             for (Element e : constructorElements) {
                 String aType = e.attributeValue("type");
                 String aName = e.attributeValue("name");
                 String aValue = e.attributeValue("value");
-                avs.addArgumentValue(new ArgumentValue(aType, aName, aValue));
+                avs.addArgumentValue(new ConstructorArgumentValue(aType, aName, aValue));
             }
             beanDefinition.setConstructorArgumentValues(avs);
 
@@ -61,7 +67,7 @@ public class XmlBeanDefinitionReader {
             beanDefinition.setPropertyValues(pvs);
             beanDefinition.setDependsOn(refs.toArray(new String[0]));
 
-            this.simpleBeanFactory.registerBeanDefinition(beanID, beanDefinition);
+            this.beanFactory.registerBeanDefinition(beanID, beanDefinition);
         }
     }
 

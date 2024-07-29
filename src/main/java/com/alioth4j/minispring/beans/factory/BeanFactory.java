@@ -1,4 +1,6 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory;
+
+import com.alioth4j.minispring.beans.BeansException;
 
 /**
  * Bean工厂

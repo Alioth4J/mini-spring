@@ -1,4 +1,6 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory.config;
+
+import com.alioth4j.minispring.beans.PropertyValues;
 
 /**
  * Bean的定义
@@ -13,7 +15,7 @@ public class BeanDefinition {
     private String scope = SCOPE_SINGLETON;
     private boolean lazyInit = false;
     private String[] dependsOn;
-    private ArgumentValues constructorArgumentValues;
+    private ConstructorArgumentValues constructorArgumentValues;
     private PropertyValues propertyValues;
     private String initMethodName;
     private volatile Object beanClass;
@@ -67,12 +69,12 @@ public class BeanDefinition {
         this.dependsOn = dependsOn;
     }
 
-    public ArgumentValues getConstructorArgumentValues() {
+    public ConstructorArgumentValues getConstructorArgumentValues() {
         return constructorArgumentValues;
     }
 
-    public void setConstructorArgumentValues(ArgumentValues constructorArgumentValues) {
-        this.constructorArgumentValues = constructorArgumentValues != null ? constructorArgumentValues : new ArgumentValues();
+    public void setConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues) {
+        this.constructorArgumentValues = constructorArgumentValues != null ? constructorArgumentValues : new ConstructorArgumentValues();
     }
 
     public PropertyValues getPropertyValues() {

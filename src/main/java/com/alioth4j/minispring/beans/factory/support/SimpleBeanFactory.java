@@ -1,4 +1,10 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory.support;
+
+import com.alioth4j.minispring.beans.*;
+import com.alioth4j.minispring.beans.factory.BeanFactory;
+import com.alioth4j.minispring.beans.factory.config.BeanDefinition;
+import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValue;
+import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValues;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -88,13 +94,13 @@ public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements B
         Object obj = null;
 
         // 构造器注入相关
-        ArgumentValues argumentValues = bd.getConstructorArgumentValues();
+        ConstructorArgumentValues argumentValues = bd.getConstructorArgumentValues();
         if (!argumentValues.isEmpty()) {
             // 构造器注入
             Class<?>[] paramTypes = new Class<?>[argumentValues.getArgumentCount()];
             Object[] paramValues = new Object[argumentValues.getArgumentCount()];
             for (int i = 0; i < argumentValues.getArgumentCount(); i++) {
-                ArgumentValue argumentValue = argumentValues.getIndexedArgumentValue(i);
+                ConstructorArgumentValue argumentValue = argumentValues.getIndexedArgumentValue(i);
                 if ("String".equals(argumentValue.getType()) || "java.lang.String".equals(argumentValue.getType())) {
                     paramTypes[i] = String.class;
                     paramValues[i] = argumentValue.getValue();

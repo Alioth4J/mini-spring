@@ -1,4 +1,6 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory.support;
+
+import com.alioth4j.minispring.beans.factory.config.SingletonBeanRegistry;
 
 import java.util.ArrayList;
 import java.util.List;

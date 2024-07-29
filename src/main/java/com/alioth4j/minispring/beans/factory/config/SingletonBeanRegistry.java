@@ -1,4 +1,4 @@
-package com.alioth4j.minispring.beans;
+package com.alioth4j.minispring.beans.factory.config;
 
 public interface SingletonBeanRegistry {
 
