@@ -1,8 +1,11 @@
 package com.alioth4j.minispring.test;
 
+import com.alioth4j.minispring.web.RequestMapping;
+
 public class HelloWorldBean {
 
-    public String doGet() {
+    @RequestMapping("/test")
+    public String doTest() {
         return "Hello world!";
     }
 
