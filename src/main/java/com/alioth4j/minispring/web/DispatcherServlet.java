@@ -1,5 +1,7 @@
 package com.alioth4j.minispring.web;
 
+import com.alioth4j.minispring.web.servlet.*;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -7,8 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -17,8 +18,12 @@ public class DispatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    public static final String WEB_APPLICATION_CONTEXT_ATTRIBUTE = DispatcherServlet.class.getName() + ".CONTEXT";
+
     private String sContextConfigLocation;
+
     private WebApplicationContext webApplicationContext;
+    private WebApplicationContext parentApplicationContext;
 
     private List<String> packageNames = new ArrayList<>();
 
@@ -26,9 +31,8 @@ public class DispatcherServlet extends HttpServlet {
     private Map<String, Class<?>> controllerClasses = new HashMap<>();
     private Map<String, Object> controllerObjs = new HashMap<>();
 
-    private List<String> urlMappingNames = new ArrayList<>();
-    private Map<String, Object> mappingObjs = new HashMap<>();
-    private Map<String, Method> mappingMethods = new HashMap<>();
+    private HandlerMapping handlerMapping;
+`   private HandlerAdapter handlerAdapter;
 
     public DispatcherServlet() {
         super();
@@ -37,7 +41,7 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        this.webApplicationContext = (WebApplicationContext) this.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        this.parentApplicationContext = (WebApplicationContext) this.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
         sContextConfigLocation = config.getInitParameter("contextConfigLocation");
         URL xmlPath = null;
         try {
@@ -45,15 +49,23 @@ public class DispatcherServlet extends HttpServlet {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-
         this.packageNames = XmlScanComponentHelper.getNodeValue(xmlPath);
-
+        this.webApplicationContext = new AnnotationConfigWebApplicationContext(sContextConfigLocation, this.parentApplicationContext);
         refresh();
     }
 
     protected void refresh() {
         initController();
-        initMapping();
+        initHandlerMappings(this.webApplicationContext);
+        initMappingAdapter(this.webApplicationContext);
+    }
+
+    private void initHandlerMappings(WebApplicationContext webApplicationContext) {
+        this.handlerMapping = new RequestMappingHandlerMapping(webApplicationContext);
+    }
+
+    private void initMappingAdapter(WebApplicationContext webApplicationContext) {
+        this.handlerAdapter = new RequestMappingHandlerAdapter(webApplicationContext);
     }
 
     protected void initController() {
@@ -101,42 +113,26 @@ public class DispatcherServlet extends HttpServlet {
         return tempControllerNames;
     }
 
-    protected void initMapping() {
-        for (String controllerName : this.controllerNames) {
-            Class<?> clazz = this.controllerClasses.get(controllerName);
-            Method[] methods = clazz.getDeclaredMethods();
-            if (methods != null) {
-                for (Method method : methods) {
-                    boolean isRequestMapping = method.isAnnotationPresent(RequestMapping.class);
-                    if (isRequestMapping) {
-                        String urlMapping = method.getAnnotation(RequestMapping.class).value();
-                        this.urlMappingNames.add(urlMapping);
-                        this.mappingObjs.put(urlMapping, method);
-                        this.mappingMethods.put(urlMapping, method);
-                    }
-                }
-            }
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.webApplicationContext);
+        try {
+            doDispatch(req, resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
         }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String sPath = request.getServletPath();
-
-        if (!urlMappingNames.contains(sPath)) {
+    protected void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+        HttpServletRequest processedRequest = req;
+        HandlerMethod handlerMethod = null;
+        handlerMethod = this.handlerMapping.getHandler(processedRequest);
+        if (handlerMethod == null) {
             return;
         }
-        Method method = this.mappingMethods.get(sPath);
-        Object obj = this.mappingObjs.get(sPath);
-        Object objResult = null;
-        try {
-            objResult = method.invoke(obj);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-
-        response.getWriter().append(objResult.toString());
+        HandlerAdapter ha = this.handlerAdapter;
+        ha.handle(req, resp, handlerMethod);
     }
 
 }

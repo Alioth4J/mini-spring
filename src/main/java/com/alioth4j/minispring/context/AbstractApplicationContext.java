@@ -20,6 +20,14 @@ public abstract class AbstractApplicationContext implements ApplicationContext {
     private final AtomicBoolean closed = new AtomicBoolean();
     private ApplicationEventPublisher applicationEventPublisher;
 
+    public ApplicationEventPublisher getApplicationEventPublisher() {
+        return applicationEventPublisher;
+    }
+
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+
     @Override
     public String[] getSingletonNames() {
         return getBeanFactory().getSingletonNames();

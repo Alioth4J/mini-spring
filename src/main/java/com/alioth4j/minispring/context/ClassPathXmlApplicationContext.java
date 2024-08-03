@@ -81,18 +81,18 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
         this.getApplicationEventPublisher().addApplicationEventPublisher(listener);
     }
 
-    private void refresh() {
+    public void refresh() {
         registerBeanPostProcessors(this.beanFactory);
         onRefresh();
     }
 
-    private void registerBeanPostProcessors(ConfigurableListableBeanFactory bf) {
+    void registerBeanPostProcessors(ConfigurableListableBeanFactory bf) {
 //        if (supportAutowire) {
             bf.addBeanPostProcessor(new AutowiredAnnotationBeanPostProcessor());
 //        }
     }
 
-    private void onRefresh() {
+    void onRefresh() {
         this.beanFactory.refresh();
     }
 
