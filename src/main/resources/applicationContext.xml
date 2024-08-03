@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans>
+    <bean id="bbs" class="com.alioth4j.minispring.test.Base">
+        <property type="String" name="name" value="abd"/>
+    </bean>
+    <bean id="aservice" class="com.alioth4j.minispring.test.AServiceImpl">
+        <constructor-arg type="String" name="name" value="abc"/>?
+        <constructor-arg type="int" name="level" value="3"/>
+        <property type="String" name="property1" value="Someone says"/>
+        <property type="String" name="property2" value="Hello world"/>
+        <property type="com.alioth4j.minispring.test.BaseService" name="ref1" ref="baseservice"/>
+    </bean>
+    <bean id="baseservice" class="com.alioth4j.minispring.test.BaseService">
+    </bean>
+</beans>

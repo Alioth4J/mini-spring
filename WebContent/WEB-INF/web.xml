@@ -3,6 +3,13 @@
          xmlns:web="http://xmlns.jcp.org/xml/ns/javaee"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/nx/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          id="WebApp_ID">
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>com.alioth4j.web.ContextLoaderListener</listener-class>
+    </listener>
     <servlet>
         <servlet-name>minispringMVC</servlet-name>
         <servlet-class>com.alioth4j.web.DispatcherServlet</servlet-class>

@@ -18,6 +18,7 @@ public class DispatcherServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private String sContextConfigLocation;
+    private WebApplicationContext webApplicationContext;
 
     private List<String> packageNames = new ArrayList<>();
 
@@ -36,6 +37,7 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        this.webApplicationContext = (WebApplicationContext) this.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
         sContextConfigLocation = config.getInitParameter("contextConfigLocation");
         URL xmlPath = null;
         try {
@@ -102,16 +104,14 @@ public class DispatcherServlet extends HttpServlet {
     protected void initMapping() {
         for (String controllerName : this.controllerNames) {
             Class<?> clazz = this.controllerClasses.get(controllerName);
-            Object obj = this.controllerObjs.get(controllerName);
             Method[] methods = clazz.getDeclaredMethods();
             if (methods != null) {
                 for (Method method : methods) {
                     boolean isRequestMapping = method.isAnnotationPresent(RequestMapping.class);
                     if (isRequestMapping) {
-                        String methodName = method.getName();
                         String urlMapping = method.getAnnotation(RequestMapping.class).value();
                         this.urlMappingNames.add(urlMapping);
-                        this.mappingObjs.put(urlMapping, obj);
+                        this.mappingObjs.put(urlMapping, method);
                         this.mappingMethods.put(urlMapping, method);
                     }
                 }
