@@ -1,19 +1,27 @@
 package com.alioth4j.minispring.web.servlet;
 
+import com.alioth4j.minispring.beans.BeansException;
 import com.alioth4j.minispring.web.WebApplicationContext;
+import com.alioth4j.minispring.web.WebBindingInitializer;
+import com.alioth4j.minispring.web.WebDataBinder;
+import com.alioth4j.minispring.web.WebDataBinderFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 public class RequestMappingHandlerAdapter implements HandlerAdapter {
 
     WebApplicationContext wac;
+    private WebBindingInitializer webBindingInitializer = null;
 
     public RequestMappingHandlerAdapter(WebApplicationContext wac) {
         this.wac = wac;
+        try {
+            this.webBindingInitializer = (WebBindingInitializer) this.wac.getBean("webBindingInitializer");
+        } catch (BeansException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -21,22 +29,19 @@ public class RequestMappingHandlerAdapter implements HandlerAdapter {
         handleInternal(request, response, (HandlerMethod) handler);
     }
 
-    private void handleInternal(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler) {
-        Method method = handler.getMethod();
-        Object obj = handler.getBean();
-        Object objResult = null;
-        try {
-            objResult = method.invoke(obj);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+    private void handleInternal(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
+        WebDataBinderFactory binderFactory = new WebDataBinderFactory();
+        Parameter[] methodParameters = handlerMethod.getMethod().getParameters();
+        Object[] methodParamObjs = new Object[methodParameters.length];
+        int i = 0;
+        for (Parameter methodParameter : methodParameters) {
+            Object methodParamObj = methodParameter.getType().newInstance();
+            WebDataBinder wdb = binderFactory.createBinder(request, methodParamObj, methodParameter.getName());
+            wdb.bind(request);
+            methodParamObjs[i] = methodParamObj;
         }
-        try {
-            response.getWriter().append(objResult.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Object returnObject = handlerMethod.getMethod().invoke(handlerMethod.getBean(), methodParamObjs);
+        response.getWriter().append(returnObject.toString());
     }
 
 }

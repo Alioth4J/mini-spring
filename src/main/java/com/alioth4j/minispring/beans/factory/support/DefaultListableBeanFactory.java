@@ -60,7 +60,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return result;
     }
 
-    public void setParentBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+    public void setParent(ConfigurableListableBeanFactory beanFactory) {
         this.parentBeanFactory = beanFactory;
     }
 

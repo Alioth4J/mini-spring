@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandle;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -32,7 +31,7 @@ public class DispatcherServlet extends HttpServlet {
     private Map<String, Object> controllerObjs = new HashMap<>();
 
     private HandlerMapping handlerMapping;
-`   private HandlerAdapter handlerAdapter;
+    private HandlerAdapter handlerAdapter;
 
     public DispatcherServlet() {
         super();
