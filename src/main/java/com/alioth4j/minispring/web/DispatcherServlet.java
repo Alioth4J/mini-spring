@@ -63,8 +63,8 @@ public class DispatcherServlet extends HttpServlet {
         this.handlerMapping = new RequestMappingHandlerMapping(webApplicationContext);
     }
 
-    private void initMappingAdapter(WebApplicationContext webApplicationContext) {
-        this.handlerAdapter = new RequestMappingHandlerAdapter(webApplicationContext);
+    private void initMappingAdapter(WebApplicationContext wac) {
+        this.handlerAdapter = (HandlerAdapter) wac.getBean(HANDLER_ADAPTER_BEAN_NAME);
     }
 
     protected void initController() {
