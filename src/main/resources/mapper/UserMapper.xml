@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace="com.test.entity.User">
+    <select id="getUserInfo" paramterType="java.lang.Integer" resultType="com.alioth4j.minispring.test.entity.User">
+        select id, name, birthday from users where id = ?
+    </select>
+</mapper>

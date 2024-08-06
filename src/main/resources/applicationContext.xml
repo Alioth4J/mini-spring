@@ -50,4 +50,8 @@
         <property type="String" name="password" value="root" />
         <property type="int" name="initialSize" value="3" />
     </bean>
+
+    <bean id="sqlSessionFactory" class="com.alioth4j.minispring.mybatis.DefaultSqlSessionFactory" init-method="init">
+        <property type="String" name="mapperLocations" value="mapper" />
+    </bean>
 </beans>
