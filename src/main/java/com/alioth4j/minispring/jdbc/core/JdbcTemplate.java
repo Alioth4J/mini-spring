@@ -2,7 +2,7 @@ package com.alioth4j.minispring.jdbc.core;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Date;
+import java.util.List;
 
 public class JdbcTemplate {
 
@@ -46,22 +46,43 @@ public class JdbcTemplate {
         try {
             con = dataSource.getConnection();
             pstmt = con.prepareStatement(sql);
+
             // 设置参数
-            for (int i = 0; i < args.length; i++) {
-                Object arg = args[i];
-                // 按不同的数据类型调用相应的方法进行设置
-                if (arg instanceof String) {
-                    pstmt.setString(i + 1, (String)arg);
-                } else if (arg instanceof Integer) {
-                    pstmt.setInt(i + 1, (int)arg);
-                } else if (arg instanceof Date) {
-                    pstmt.setDate(i + 1, new Date((Date)arg).getTime());
-                }
-            }
+            ArgumentPreparedStatementSetter argumentSetter = new ArgumentPreparedStatementSetter(args);
+            argumentSetter.setValues(pstmt);
+
             // callback
             return pstmtcallback.doInPreparedStatement(pstmt);
-        } catch (ClassNotFoundException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                pstmt.close();
+                con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    public <T> List<T> query(String sql, Object[] args, RowMapper<T> rowMapper) {
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        Object rtnObject = null;
+        RowMapperResultSetExtractor<T> resultExtractor = new RowMapperResultSetExtractor<>(rowMapper);
+
+        try {
+            con = dataSource.getConnection();
+            pstmt = con.prepareStatement(sql);
+
+            // 设置参数
+            ArgumentPreparedStatementSetter argumentSetter = new ArgumentPreparedStatementSetter(args);
+            argumentSetter.setValues(pstmt);
+
+            // 处理返回结果
+            return resultExtractor.extractData(rs);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

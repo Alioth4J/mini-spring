@@ -36,10 +36,18 @@
         <property type="javax.sql.DataSource" name="dataSource" ref="dataSource" />
     </bean>
 
-    <bean id="dataSource" class="com.alioth4j.minispring.jdbc.datasource.SingleConnectionDataSource">
-        <property type="String" name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+<!--    <bean id="dataSource" class="com.alioth4j.minispring.jdbc.datasource.SingleConnectionDataSource">-->
+<!--        <property type="String" name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />-->
+<!--        <property type="String" name="url" value="jdbc:sqlserver://localhost:1433;databasename=DEMO;" />-->
+<!--        <property type="String" name="username" value="root" />-->
+<!--        <property type="String" name="password" value="root" />-->
+<!--    </bean>-->
+
+    <bean id="dataSource" class="com.alioth4j.minispring.jdbc.pool.PooledDataSource">
+        <property name="url" value="jdbc:sqlserver://localhost:1433;databasename=DEMO" />
         <property type="String" name="url" value="jdbc:sqlserver://localhost:1433;databasename=DEMO;" />
         <property type="String" name="username" value="root" />
         <property type="String" name="password" value="root" />
+        <property type="int" name="initialSize" value="3" />
     </bean>
 </beans>
