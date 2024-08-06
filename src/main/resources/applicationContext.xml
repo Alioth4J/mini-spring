@@ -24,4 +24,10 @@
         <property type="String" name="dateFormat" value="yyyy/MM/dd"/>
         <property type="String" name="decimalFormat" value="###.##"/>
     </bean>
+
+    <bean id="viewResolver" class="com.alioth4j.minispring.web.servlet.view.InternalResourceViewResolver">
+        <property type="String" name="viewClassName" value="com.alioth4j.minispring.web.servlet.view.JstlView" />
+        <property type="String" name="prefix" value="/jsp/" />
+        <property type="String" name="suffix" value=".jsp" />
+    </bean>
 </beans>

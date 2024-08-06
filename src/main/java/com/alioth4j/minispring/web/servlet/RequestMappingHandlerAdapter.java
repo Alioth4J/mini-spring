@@ -34,7 +34,7 @@ public class RequestMappingHandlerAdapter implements HandlerAdapter {
         invokeHandlerMethod(request, response, handlerMethod);
     }
 
-    protected void invokeHandlerMethod(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
+    protected ModelAndView invokeHandlerMethod(HttpServletRequest request, HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
         WebDataBinderFactory binderFactory = new WebDataBinderFactory();
         Parameter[] methodParameters = handlerMethod.getMethod().getParameters();
         Object[] methodParamObjs = new Object[methodParameters.length];
@@ -48,12 +48,19 @@ public class RequestMappingHandlerAdapter implements HandlerAdapter {
         Method invocableMethod = handlerMethod.getMethod();
         Object returnObject = invocableMethod.invoke(handlerMethod.getBean(), methodParamObjs);
 
-        // @ResponseBody
+        ModelAndView mav = null;
         if (invocableMethod.isAnnotationPresent(ResponseBody.class)) {
             this.messageConverter.write(returnObject, response);
+        } else {
+            if (returnObject instanceof ModelAndView) {
+                mav = (ModelAndView) returnObject;
+            } else if (returnObject instanceof String) {
+                String sTarget = (String) returnObject;
+                mav = new ModelAndView();
+                mav.setViewName(sTarget);
+            }
         }
-
-        response.getWriter().append(returnObject.toString());
+        return mav;
     }
 
 }
