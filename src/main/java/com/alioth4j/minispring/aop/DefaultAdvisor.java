@@ -8,6 +8,11 @@ public class DefaultAdvisor implements Advisor {
     }
 
     @Override
+    public Advice getAdvice() {
+        return this.methodInterceptor;
+    }
+
+    @Override
     public MethodInterceptor getMethodInterceptor() {
         return this.methodInterceptor;
     }
