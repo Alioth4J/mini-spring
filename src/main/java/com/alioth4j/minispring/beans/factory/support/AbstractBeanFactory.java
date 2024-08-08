@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory, BeanDefinitionRegistry {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport implements BeanFactory, BeanDefinitionRegistry {
 
     protected Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>(256);
     protected List<String> beanDefinitionNames = new ArrayList<>();
