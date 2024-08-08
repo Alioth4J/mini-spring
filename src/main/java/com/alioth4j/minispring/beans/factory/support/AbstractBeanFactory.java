@@ -4,6 +4,7 @@ import com.alioth4j.minispring.beans.BeansException;
 import com.alioth4j.minispring.beans.PropertyValue;
 import com.alioth4j.minispring.beans.PropertyValues;
 import com.alioth4j.minispring.beans.factory.BeanFactory;
+import com.alioth4j.minispring.beans.factory.FactoryBean;
 import com.alioth4j.minispring.beans.factory.config.BeanDefinition;
 import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValue;
 import com.alioth4j.minispring.beans.factory.config.ConstructorArgumentValues;
@@ -52,7 +53,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
                 // BeanPostProcessor
                 // step1: postProcessBeforeInitialization
-                applyBeanPostProcessorsBeforeInitialization(singleton, beanName);
+                singleton = applyBeanPostProcessorsBeforeInitialization(singleton, beanName);
                 // step2: afterPropertiesSet
 
                 // step3: init-method
@@ -61,12 +62,31 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
                 }
                 // step4: postProcessAfterInitialization
                 applyBeanPostProcessorsAfterInitialization(singleton, beanName);
+
+                this.removeSingleton(beanName);
+                this.registerBean(beanName, singleton);
             }
         }
+
         if (singleton == null) {
             throw new BeansException("No such bean: " + beanName);
         }
+
+        if (singleton instanceof FactoryBean) {
+            return this.getObjectForBeanInstance(singleton, beanName);
+        }
+
         return singleton;
+    }
+
+    protected Object getObjectForBeanInstance(Object beanInstance, String beanName) {
+        if (!(beanInstance instanceof FactoryBean)) {
+            return beanInstance;
+        }
+        Object object = null;
+        FactoryBean<?> factoryBean = (FactoryBean)beanInstance;
+        object = getObjectFromFactoryBean(factoryBean, beanName);
+        return object;
     }
 
     private void invokeInitMethod(BeanDefinition bd, Object obj) {

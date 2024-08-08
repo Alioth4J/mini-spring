@@ -90,4 +90,20 @@ public class ProxyFactoryBean implements FactoryBean<Object> {
         return aopProxy.getProxy();
     }
 
+    public void setProxyClassLoader(ClassLoader proxyClassLoader) {
+        this.proxyClassLoader = proxyClassLoader;
+    }
+
+    public void setSingletonInstance(Object singletonInstance) {
+        this.singletonInstance = singletonInstance;
+    }
+
+    public void setAdvisor(Advisor advisor) {
+        this.advisor = advisor;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
 }
